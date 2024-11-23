@@ -1,201 +1,112 @@
 #include <iostream>
-#include <windows.h>
-#include <conio.h>
+#include <cstring> 
+#include <conio.h> 
 
 using namespace std;
-char a[1][3], moves[11][16];
-int p, turn = 1;
 
-int verificadacaestesimbol(char input)
+char tabla[3][3];
+int turn = 1;
+
+// initializarea tablei
+void init() 
 {
-    for(int i = 0; i < 3; i++)
-        for(int j = 0; j < 3; j++)
-        {
-            if(a[i][j] == input)
-                return 1;
+    char nr = '1';
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++) 
+            tabla[i][j] = nr++;
+}
+
+// afisarea tablei
+void afisare() {
+    cout << "\n";
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            cout << "| " << tabla[i][j] << " ";
         }
-    return 0;
-}
-
-void adaugaintabla(char x,int p)
-{
-    for(int i = 0; i < 3; i++)
-        for(int j = 0; j < 3; j++)
-            if(a[i][j] == x)
-                if(p == 1)
-                    a[i][j] = 'X';
-                else
-                    a[i][j] = 'O';
-}
-
-void afisarelinii()
-{
-    cout<<"\n\n";
-   for(int i = 1; i < 20; i++)
-        cout<<'-';
-    cout<<"\n\n";
-}
-
-void afisare()
-{
-    afisarelinii();
-    for(int i = 0; i < 3; i++)
-    {
-        for(int j = 0; j < 3; j++)
-            cout<<"|  "<<a[i][j]<<"  ";
-        cout<<'|';
-        afisarelinii();
+        cout << "|\n";
+        for (int k = 0; k < 13; k++) cout << "-";
+        cout << "\n";
     }
 }
 
+bool verificadacaestesimbol(char input) {
+    for (int i = 0; i < 3; i++) 
+        for (int j = 0; j < 3; j++) 
+            if (tabla[i][j] == input) return true;
+    return false;
+}
+
+void adaugaintabla(char input, int player) {
+    for (int i = 0; i < 3; i++) 
+        for (int j = 0; j < 3; j++) 
+            if (tabla[i][j] == input) 
+                tabla[i][j] = (player == 1) ? 'X' : 'O';
+}
+
+// afisarea finala a mutarilor
 void afisarelog()
 {
-    cout<<"MUTARI \n";
+    cout<<"\nMUTARI:\n";
     int k = 0;
     for(int i = 0; i < 3; i++)
         for(int j = 0; j < 3; j++)
         {
             k++;
-            if(a[i][j] == 'X')
-                cout<<"Player 1 mutare :"<<k<<'\n';
+            if(tabla[i][j] == 'X')
+                cout<<"Player 1 mutare: "<<k<<'\n';
             else
-                if(a[i][j] == 'O')
-                cout<<"Player 2 mutare :"<<k<<'\n';
+                if(tabla[i][j] == 'O')
+                cout<<"Player 2 mutare: "<<k<<'\n';
         }
 }
 
-void init()
-{
-    char nr = '0';
-    for(int i = 0; i <= 2; i++)
-        for(int j = 0; j <= 2; j++)
-        {
-            nr++;
-            a[i][j] = nr;
-        }
-
-    for(int i = 0; i <= 9; i++)
-        for(int j = 0; j <= 11; j++)
-            moves[i][j] = 0;
-}
-
-bool win()
-{
-    int i, nr=0;
-    for(i = 0; i < 3; i++)
-    {
-        if(a[i][0] == a[i][1] && a[i][1] == a[i][2])
-        {
-            if(a[i][0] == 'X')
-                nr = 1;
-            else
-                if(a[i][0] == 'O')
-                    nr = 2;
-
-            break;
-        }
-        if(a[0][i] == a[1][i] && a[1][i] == a[2][i])
-        {
-            if(a[0][i] == 'X')
-                nr = 1;
-            else
-                if(a[0][i] == 'O')
-                    nr = 2;
-
-            break;
-        }
+bool win() {
+    for (int i = 0; i < 3; i++) {
+        if (tabla[i][0] == tabla[i][1] && tabla[i][1] == tabla[i][2]) return true;
+        if (tabla[0][i] == tabla[1][i] && tabla[1][i] == tabla[2][i]) return true;
     }
-    if(a[0][0] == a[1][1] && a[1][1] == a[2][2])
-        if(a[1][1]=='X')
-            nr = 1;
-        else
-            if(a[1][1] == 'O')
-                nr = 2;
-    if(a[0][2] == a[1][1] && a[1][1] == a[2][0])
-        if(a[2][2] == 'X')
-            nr = 1;
-        else
-            if(a[2][2] == 'O')
-                nr = 2;
-
-    if(nr)
-    {
-        system("cls");
-        turn=1;
-        afisare();
-        afisarelog();
-        cout<<"Player "<<nr<<" a castigat"<<'\n';
-        cout<<"Pentru a incepe o noua runda apasati orice";
-        getch();
-        init();
-    }
+    if (tabla[0][0] == tabla[1][1] && tabla[1][1] == tabla[2][2]) return true;
+    if (tabla[0][2] == tabla[1][1] && tabla[1][1] == tabla[2][0]) return true;
+    return false;
 }
 
-int main()
-{
+int main() {
     init();
-
-    do
-    {
+    do {
         system("cls");
         afisare();
-        char input[150];
-        bool x=true;
-        if(turn % 2 != 0)
-        {
-            do
+        char input;
+        bool valid = false;
+        int player = (turn % 2 == 1) ? 1 : 2;
+        
+        do {
+            cout<<"Player "<<player<<", alege: ";
+            cin>>input;
+            if (verificadacaestesimbol(input)) 
             {
-                cout<<"Player 1 alege : ";
-                cin.getline(input, 150);
-                if(input[0] >= '1' && input[0] <= '9')
-                {
-                    if(verificadacaestesimbol(input[0]) == 0)
-                        x = true;
-                    else
-                    {
-                        x = false;
-                        p = 1;
-                        strcpy(moves[turn], "Player 1 : ");
-                        moves[turn][11] = input[0];
-                        adaugaintabla(input[0], p);
-                        turn++;
-                    }
-                }
-            }while(x);
-        }
-        else
-        {
-            do
-            {
-                cout<<"Player 2 alege : ";
-                cin.getline(input, 150);
-                if(input[0] >= '1' && input[0] <= '9')
-                {
-                    if(verificadacaestesimbol(input[0]) == 0)
-                        x = true;
-                    else
-                    {
-                        x = false;
-                        p = 2;
-                        strcpy(moves[turn], "Player 2 : ");
-                         moves[turn][11] = input[0];
-                        adaugaintabla(input[0], p);
-                        turn++;
-                    }
-                }
-            }while(x);
-        }
-        if(turn == 10)
-        {
+                valid = true;
+                adaugaintabla(input, player);
+                turn++;
+            } 
+            else 
+                cout << "Pozitie invalida! Incearca din nou.\n";
+        } while (!valid);
+
+        if (win()) {
             system("cls");
-            turn=1;
             afisare();
+            cout << "Player " << player << " a castigat!\n";
             afisarelog();
-            cout<<'\n'<<"Remiza"<<"\n\n";
-            cout<<"Pentru a incepe o noua runda apasati orice";
-            getch();
-            init();
+            break;
         }
-    }while(win());
+
+        if (turn > 9) {
+            cout << "Remiza!\n";
+            afisarelog();
+            break;
+        }
+
+    } while (true);
+
     return 0;
 }
